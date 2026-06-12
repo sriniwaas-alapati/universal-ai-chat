@@ -63,12 +63,8 @@ app.post('/api/relay', async (req, res) => {
   try { parsedUrl = new URL(targetUrl); }
   catch { return res.status(400).json({ error: 'Invalid targetUrl' }); }
 
-  if (!isHostAllowed(parsedUrl.hostname)) {
-    return res.status(403).json({ error: `Host not allowed: ${parsedUrl.hostname}` });
-  }
-
   const label = `${parsedUrl.hostname}${parsedUrl.pathname.slice(0, 60)}`;
-  console.log(`[proxy] → POST ${label}`);
+  console.log(`[relay] → POST ${label}`);
 
   try {
     const upstream = await fetch(targetUrl, {
