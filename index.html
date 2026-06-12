@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Universal AI Chat – Multi-Provider LLM Interface</title>
+  <meta name="description" content="Chat with any LLM – OpenAI, Azure, Google Gemini, Groq, Ollama with step-by-step guided setup." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">Universal AI</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="connection-status" id="connectionStatus">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Not Connected</span>
+      <span class="provider-badge" id="providerBadge"></span>
+    </div>
+
+    <div class="config-panel">
+
+      <!-- ── Step 0: Provider Picker ── -->
+      <div class="config-section-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        Step 1 — Choose a Provider
+      </div>
+      <div class="provider-grid" id="providerGrid"><!-- injected by JS --></div>
+
+      <!-- ── Wizard Steps (injected by JS on provider change) ── -->
+      <div id="setupWizard"><!-- steps rendered here --></div>
+
+      <!-- ── Actions ── -->
+      <div class="config-divider"></div>
+      <button class="btn-secondary" id="btnClearChat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Clear Chat
+      </button>
+      <button class="btn-secondary" id="btnExport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Chat
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- ========== MAIN ========== -->
+  <main class="main-content" id="mainContent">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-menu-btn" id="topbarMenuBtn" aria-label="Open sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="topbar-title">
+          <h1>Universal AI Chat</h1>
+          <span class="topbar-subtitle" id="topbarSubtitle">Choose a provider from the sidebar to begin</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="model-pill" id="modelPill" style="display:none;">
+          <span id="modelPillText"></span>
+        </div>
+        <div class="token-counter" id="tokenCounter" title="Estimated tokens used">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="tokenCount">0</span> tokens
+        </div>
+        <button class="btn-icon" id="btnSettings" title="Open sidebar" aria-label="Open sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Chat -->
+    <div class="chat-container" id="chatContainer">
+      <div class="welcome-state" id="welcomeState">
+        <div class="welcome-icon">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3b82f6"/>
+                <stop offset="100%" style="stop-color:#8b5cf6"/>
+              </linearGradient>
+            </defs>
+            <path d="M32 8L8 20L32 32L56 20L32 8Z" stroke="url(#wg)" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M8 44L32 56L56 44" stroke="url(#wg)" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M8 32L32 44L56 32" stroke="url(#wg)" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Universal AI Chat</h2>
+        <p>One interface for every AI provider. Pick a provider on the left — a step-by-step guide will appear to help you connect in seconds.</p>
+        <div class="provider-showcase" id="providerShowcase"></div>
+        <div class="example-queries">
+          <p class="example-label">Quick starters</p>
+          <button class="example-chip" data-query="Explain the difference between RAG and fine-tuning in simple terms.">RAG vs Fine-tuning</button>
+          <button class="example-chip" data-query="Write a Python function to chunk text for vector search pipelines.">Code example</button>
+          <button class="example-chip" data-query="What are the best practices for prompt engineering?">Prompt engineering</button>
+        </div>
+      </div>
+      <div class="messages-list" id="messagesList"></div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-row">
+        <div class="textarea-wrapper">
+          <textarea id="userInput" placeholder="Message the AI…" rows="1" maxlength="32000"></textarea>
+          <div class="char-count" id="charCount">0 / 32000</div>
+        </div>
+        <button class="btn-send" id="btnSend" disabled aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="19" height="19">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span class="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</span>
+        <span class="powered-by" id="poweredBy">Universal AI Interface</span>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
