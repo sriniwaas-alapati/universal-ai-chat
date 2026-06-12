@@ -147,7 +147,7 @@ const state = {
   messages: [], estimatedTokens: 0, formData: {}
 };
 
-const PROXY_URL   = '/proxy';
+const PROXY_URL   = '/api/relay';
 const STORAGE_KEY = 'universal_ai_config_v2';
 const $ = id => document.getElementById(id);
 

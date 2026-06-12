@@ -53,8 +53,8 @@ function isHostAllowed(hostname) {
   return ALLOWED_HOSTS.some(h => hostname === h || hostname.endsWith(h));
 }
 
-/* ── /proxy endpoint ──────────────────────────────────────── */
-app.post('/proxy', async (req, res) => {
+/* ── /api/relay endpoint ──────────────────────────────────────── */
+app.post('/api/relay', async (req, res) => {
   const { targetUrl, headers: fwdHeaders, body: fwdBody } = req.body;
 
   if (!targetUrl) return res.status(400).json({ error: 'targetUrl is required' });
