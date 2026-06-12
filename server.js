@@ -39,6 +39,10 @@ const ALLOWED_HOSTS = [
   '.googleapis.com',
   // Groq
   '.groq.com',
+  // Local tunneling for Ollama
+  '.ngrok.app',
+  '.ngrok-free.app',
+  '.ngrok.io',
   // Ollama (local)
   'localhost',
   '127.0.0.1',
