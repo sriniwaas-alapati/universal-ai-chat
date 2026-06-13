@@ -182,8 +182,15 @@ function init() {
 
   // Render showcase on welcome screen
   els.providerShowcase.innerHTML = Object.values(PROVIDERS).map(p =>
-    `<div class="showcase-badge"><span>${p.emoji}</span><span>${p.name}</span></div>`
+    `<button class="showcase-badge" style="cursor:pointer; background:var(--bg-elevated); border:1px solid var(--border-mid); border-radius:var(--radius-md); padding:8px 12px; color:var(--text-primary); transition:all 0.2s" data-provider="${p.id}"><span>${p.emoji}</span> <span>${p.name}</span></button>`
   ).join('');
+
+  els.providerShowcase.querySelectorAll('.showcase-badge').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchProvider(btn.dataset.provider);
+      if (window.innerWidth <= 768) $('sidebar').classList.add('mobile-open');
+    });
+  });
 
   renderWizard(state.providerId);
 }
@@ -536,9 +543,10 @@ $('btnClearChat').addEventListener('click', () => {
 
 // Mobile Sidebar Toggles
 const sidebar = $('sidebar');
-$('topbarMenuBtn').addEventListener('click', () => {
-  sidebar.classList.add('mobile-open');
-});
+const openSidebar = () => sidebar.classList.add('mobile-open');
+$('topbarMenuBtn').addEventListener('click', openSidebar);
+$('btnSettings').addEventListener('click', openSidebar);
+
 $('sidebarToggle').addEventListener('click', () => {
   sidebar.classList.remove('mobile-open');
 });
