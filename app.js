@@ -551,7 +551,7 @@ $('sidebarToggle').addEventListener('click', () => {
   sidebar.classList.remove('mobile-open');
 });
 // Close sidebar when clicking main content on mobile
-els.mainContent.addEventListener('click', (e) => {
+$('mainContent').addEventListener('click', (e) => {
   if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
     sidebar.classList.remove('mobile-open');
   }
