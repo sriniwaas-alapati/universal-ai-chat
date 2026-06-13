@@ -66,6 +66,11 @@ app.post('/api/relay', async (req, res) => {
   const label = `${parsedUrl.hostname}${parsedUrl.pathname.slice(0, 60)}`;
   console.log(`[relay] → POST ${label}`);
 
+  // Send 200 OK immediately and start a heartbeat to bypass Safari 60s timeout
+  res.status(200);
+  res.setHeader('Content-Type', 'application/json');
+  const heartbeat = setInterval(() => res.write(' '), 15000);
+
   try {
     const upstream = await fetch(targetUrl, {
       method:  'POST',
@@ -73,19 +78,20 @@ app.post('/api/relay', async (req, res) => {
       body:    JSON.stringify(fwdBody),
     });
 
-    const contentType = upstream.headers.get('content-type') || '';
-    const rawText     = await upstream.text();
+    const rawText = await upstream.text();
+    clearInterval(heartbeat);
 
     console.log(`[proxy] ← ${upstream.status} ${upstream.statusText}`);
     if (!upstream.ok) console.error('[proxy] error:', rawText.slice(0, 500));
 
-    res.status(upstream.status);
-    res.setHeader('Content-Type', contentType || 'application/json');
-    res.send(rawText);
+    res.write(rawText);
+    res.end();
 
   } catch (err) {
+    clearInterval(heartbeat);
     console.error('[proxy] upstream error:', err.message);
-    res.status(502).json({ error: `Upstream request failed: ${err.message}` });
+    res.write(JSON.stringify({ error: `Upstream request failed: ${err.message}` }));
+    res.end();
   }
 });
 
