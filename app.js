@@ -186,7 +186,8 @@ function init() {
   ).join('');
 
   els.providerShowcase.querySelectorAll('.showcase-badge').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       switchProvider(btn.dataset.provider);
       if (window.innerWidth <= 768) $('sidebar').classList.add('mobile-open');
     });
@@ -543,7 +544,10 @@ $('btnClearChat').addEventListener('click', () => {
 
 // Mobile Sidebar Toggles
 const sidebar = $('sidebar');
-const openSidebar = () => sidebar.classList.add('mobile-open');
+const openSidebar = (e) => {
+  if (e) e.stopPropagation();
+  sidebar.classList.add('mobile-open');
+};
 $('topbarMenuBtn').addEventListener('click', openSidebar);
 $('btnSettings').addEventListener('click', openSidebar);
 
