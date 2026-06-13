@@ -50,7 +50,7 @@
    ========================================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { height: 100%; font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); overflow: hidden; }
+html, body { position: fixed; inset: 0; height: 100dvh; width: 100vw; font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); overflow: hidden; }
 
 body::before {
   content: '';
