@@ -144,7 +144,7 @@ const PROVIDERS = {
    ═══════════════════════════════════════════════════════════ */
 const state = {
   providerId: 'openai', connected: false, loading: false,
-  messages: [], estimatedTokens: 0, formData: {}
+  messages: [], estimatedTokens: 0, formData: {}, threadId: null
 };
 
 const PROXY_URL   = '/api/relay';
@@ -210,6 +210,7 @@ function switchProvider(id) {
     updateConnectionUI('idle');
     els.btnSend.disabled = true;
   }
+  state.threadId = null;
 
   // Load defaults for new provider if not present in saved state
   if (!state.formData[id]) {
@@ -405,9 +406,19 @@ function buildProxyPayload(messages) {
     const url = `${base.endsWith('/openai')?base:base+'/openai'}/responses?api-version=${data.apiVersion||'2025-05-15-preview'}`;
     headers = data.authMode === 'bearer' ? { 'Authorization': `Bearer ${apiKey}` } : { 'api-key': apiKey };
     
-    const inputItems = messages.map(m => ({ type: 'message', role: m.role, content: [{ type: 'text', text: m.content }] }));
-    bodyData = data.agentName ? { input: inputItems, agent_reference: { type: 'agent_reference', name: data.agentName } } : { input: inputItems, temperature: temp, stream: false };
-    if (sysPrompt) bodyData.instructions = sysPrompt;
+    // If we have an active agent thread, we only send the latest user message
+    const messagesToSend = (data.agentName && state.threadId) ? [messages[messages.length - 1]] : messages;
+    
+    const inputItems = messagesToSend.map(m => ({ type: 'message', role: m.role, content: [{ type: 'text', text: m.content }] }));
+    
+    if (data.agentName) {
+      bodyData = { input: inputItems, agent_reference: { type: 'agent_reference', name: data.agentName } };
+      if (state.threadId) bodyData.thread_id = state.threadId;
+    } else {
+      bodyData = { input: inputItems, temperature: temp, stream: false };
+    }
+    
+    if (sysPrompt && !state.threadId) bodyData.instructions = sysPrompt;
     return { endpoint: PROXY_URL, headers: {'Content-Type':'application/json'}, body: { targetUrl: url, headers, body: bodyData } };
   }
 
@@ -484,6 +495,8 @@ async function sendMessage() {
     const data = await res.json();
     if (data.error) throw new Error(data.error + (data.details ? `\n\nDetails: ${data.details.slice(0, 200)}` : ''));
 
+    if (data.thread_id) state.threadId = data.thread_id;
+
     const content = parseResponse(data, state.providerId);
     
     const astMsg = { role: 'assistant', content };
@@ -541,7 +554,7 @@ document.querySelectorAll('.example-chip').forEach(b => {
   b.addEventListener('click', () => { els.userInput.value = b.dataset.query; els.btnSend.disabled = !state.connected; });
 });
 $('btnClearChat').addEventListener('click', () => {
-  state.messages = []; els.messagesList.innerHTML = ''; els.welcomeState.style.display = 'flex';
+  state.messages = []; state.threadId = null; els.messagesList.innerHTML = ''; els.welcomeState.style.display = 'flex';
 });
 
 // Mobile Sidebar Toggles
