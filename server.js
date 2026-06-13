@@ -102,17 +102,21 @@ app.get('/health', (_, res) => res.json({ status: 'ok', port: PORT }));
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 /* ── Start ────────────────────────────────────────────────── */
-const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('  ┌────────────────────────────────────────────────┐');
-  console.log('  │   Universal AI Chat – Proxy Server             │');
-  console.log(`  │   http://localhost:${PORT}                         │`);
-  console.log('  │   OpenAI · Azure OpenAI · Azure AI Foundry     │');
-  console.log('  │   Google Gemini · Groq · Ollama                │');
-  console.log('  │   Press Ctrl+C to stop                         │');
-  console.log('  └────────────────────────────────────────────────┘');
-  console.log('');
-});
+if (require.main === module) {
+  const server = app.listen(PORT, () => {
+    console.log('');
+    console.log('  ┌────────────────────────────────────────────────┐');
+    console.log('  │   Universal AI Chat – Proxy Server             │');
+    console.log(`  │   http://localhost:${PORT}                         │`);
+    console.log('  │   OpenAI · Azure OpenAI · Azure AI Foundry     │');
+    console.log('  │   Google Gemini · Groq · Ollama                │');
+    console.log('  │   Press Ctrl+C to stop                         │');
+    console.log('  └────────────────────────────────────────────────┘');
+    console.log('');
+  });
 
-// Disable timeout for long-running local LLMs
-server.setTimeout(0);
+  // Disable timeout for long-running local LLMs
+  server.setTimeout(0);
+}
+
+module.exports = app;
