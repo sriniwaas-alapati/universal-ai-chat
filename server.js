@@ -82,7 +82,19 @@ app.post('/api/relay', async (req, res) => {
     clearInterval(heartbeat);
 
     console.log(`[proxy] ← ${upstream.status} ${upstream.statusText}`);
-    if (!upstream.ok) console.error('[proxy] error:', rawText.slice(0, 500));
+    if (!upstream.ok) {
+      console.error('[proxy] error:', rawText.slice(0, 500));
+      res.write(JSON.stringify({ error: `Upstream HTTP ${upstream.status} ${upstream.statusText}`, details: rawText.slice(0, 500) }));
+      res.end();
+      return;
+    }
+
+    if (rawText.trim().startsWith('<')) {
+      console.error('[proxy] unexpected HTML response');
+      res.write(JSON.stringify({ error: 'Upstream returned HTML instead of JSON', details: rawText.slice(0, 500) }));
+      res.end();
+      return;
+    }
 
     res.write(rawText);
     res.end();

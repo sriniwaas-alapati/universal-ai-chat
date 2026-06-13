@@ -405,7 +405,7 @@ function buildProxyPayload(messages) {
     const url = `${base.endsWith('/openai')?base:base+'/openai'}/responses?api-version=${data.apiVersion||'2025-05-15-preview'}`;
     headers = data.authMode === 'bearer' ? { 'Authorization': `Bearer ${apiKey}` } : { 'api-key': apiKey };
     
-    const inputItems = messages.map(m => ({ type: 'message', role: m.role, content: [{ type: 'input_text', text: m.content }] }));
+    const inputItems = messages.map(m => ({ type: 'message', role: m.role, content: [{ type: 'text', text: m.content }] }));
     bodyData = data.agentName ? { input: inputItems, agent_reference: { type: 'agent_reference', name: data.agentName } } : { input: inputItems, temperature: temp, stream: false };
     if (sysPrompt) bodyData.instructions = sysPrompt;
     return { endpoint: PROXY_URL, headers: {'Content-Type':'application/json'}, body: { targetUrl: url, headers, body: bodyData } };
@@ -482,6 +482,8 @@ async function sendMessage() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     
     const data = await res.json();
+    if (data.error) throw new Error(data.error + (data.details ? `\n\nDetails: ${data.details.slice(0, 200)}` : ''));
+
     const content = parseResponse(data, state.providerId);
     
     const astMsg = { role: 'assistant', content };
