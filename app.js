@@ -534,5 +534,20 @@ $('btnClearChat').addEventListener('click', () => {
   state.messages = []; els.messagesList.innerHTML = ''; els.welcomeState.style.display = 'flex';
 });
 
+// Mobile Sidebar Toggles
+const sidebar = $('sidebar');
+$('topbarMenuBtn').addEventListener('click', () => {
+  sidebar.classList.add('mobile-open');
+});
+$('sidebarToggle').addEventListener('click', () => {
+  sidebar.classList.remove('mobile-open');
+});
+// Close sidebar when clicking main content on mobile
+els.mainContent.addEventListener('click', (e) => {
+  if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+    sidebar.classList.remove('mobile-open');
+  }
+});
+
 // Start
 init();
