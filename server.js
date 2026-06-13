@@ -96,7 +96,7 @@ app.get('/health', (_, res) => res.json({ status: 'ok', port: PORT }));
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 /* ── Start ────────────────────────────────────────────────── */
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('');
   console.log('  ┌────────────────────────────────────────────────┐');
   console.log('  │   Universal AI Chat – Proxy Server             │');
@@ -107,3 +107,6 @@ app.listen(PORT, () => {
   console.log('  └────────────────────────────────────────────────┘');
   console.log('');
 });
+
+// Disable timeout for long-running local LLMs
+server.setTimeout(0);
